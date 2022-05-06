@@ -1,3 +1,6 @@
+NAME=mailchimp-importer
+VERSION=0.1.0
+
 all: docker
 build: compile
 test: unit
@@ -18,6 +21,9 @@ unit:
 	go test -coverprofile=cover.out -timeout 300s ./...
 
 docker:
-	docker build -f build/Dockerfile
+	docker build -f build/Dockerfile . -t $(NAME):$(VERSION)
+
+docker-run:
+	docker run --name $(NAME) $(NAME):$(VERSION)
 
 .PHONY: all build test run deps unit docker
