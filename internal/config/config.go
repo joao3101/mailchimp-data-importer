@@ -20,21 +20,21 @@ type Ometria struct {
 	ApiKey  string `yaml:"apiKey"`
 }
 
-type DB struct {
-	ConnectionString string `yaml:"connectionString"`
-}
-
-type loggerConfig struct {
+type LoggerConfig struct {
 	Level  string `yaml:"level"`
 	Pretty bool   `yaml:"pretty"`
 }
 
+type Ticker struct {
+	Timer int `yaml:"timer"`
+}
+
 // AppConfig is main app config
 type AppConfig struct {
-	Logger       loggerConfig `yaml:"logger"`
+	Logger       LoggerConfig `yaml:"logger"`
 	MailChimpAPI MailChimp    `yaml:"mailchimpapi"`
 	OmetriaAPI   Ometria      `yaml:"ometriaapi"`
-	DB           DB           `yaml:"db"`
+	Ticker       Ticker       `yaml:"ticker"`
 }
 
 var (
