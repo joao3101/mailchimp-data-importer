@@ -20,6 +20,10 @@ type Ometria struct {
 	ApiKey  string `yaml:"apiKey"`
 }
 
+type DB struct {
+	ConnectionString string `yaml:"connectionString"`
+}
+
 type loggerConfig struct {
 	Level  string `yaml:"level"`
 	Pretty bool   `yaml:"pretty"`
@@ -30,6 +34,7 @@ type AppConfig struct {
 	Logger       loggerConfig `yaml:"logger"`
 	MailChimpAPI MailChimp    `yaml:"mailchimpapi"`
 	OmetriaAPI   Ometria      `yaml:"ometriaapi"`
+	DB           DB           `yaml:"db"`
 }
 
 var (

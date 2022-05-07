@@ -6,8 +6,8 @@ logger:
 
 # the server config
 mailchimpapi:
-  baseUrl: https://us9.api.mailchimp.com/3.0/
-  listId: 1a2d7ebf82
+  baseUrl: https://us9.api.mailchimp.com/3.0/lists/
+  listId:
   apiKey:
 
 ometriaapi:
@@ -16,4 +16,4 @@ ometriaapi:
 
 # table storage config
 db:
-  connectionString:
+  connectionString: 

@@ -7,7 +7,8 @@ import (
 )
 
 func main() {
-	if err := importer.Importer(&config.Config); err != nil {
+	imp := importer.NewImporter(&config.Config)
+	if err := imp.Import(&config.Config); err != nil {
 		log.Panic().Msgf("failed to run app: %v", err)
 	}
 }
