@@ -28,6 +28,7 @@ func Test_getNumTasks(t *testing.T) {
 		mailchimpListID string
 	}
 	type args struct {
+		limit        int64
 		mailchimpReq http.Mailchimp
 		lastChanged  string
 	}
@@ -41,13 +42,14 @@ func Test_getNumTasks(t *testing.T) {
 		{
 			name: "returns error when makeHTTPRequest fails",
 			fields: fields{
-				ometriaAPIKey:   "",
-				ometriaURL:      "",
-				mailchimpAPIKey: "",
-				mailchimpURL:    "",
-				mailchimpListID: "",
+				ometriaAPIKey:   "123",
+				ometriaURL:      "123",
+				mailchimpAPIKey: "123",
+				mailchimpURL:    "123",
+				mailchimpListID: "123",
 			},
 			args: args{
+				limit: 100,
 				mailchimpReq: &mock.MockMailchimpAPI{
 					ApiResp: nil,
 					Err:     errors.New("err"),
@@ -67,6 +69,7 @@ func Test_getNumTasks(t *testing.T) {
 				mailchimpListID: "",
 			},
 			args: args{
+				limit: 100,
 				mailchimpReq: &mock.MockMailchimpAPI{
 					ApiResp: &model.ApiResp{
 						Members:    []model.MailchimpMembers{},
@@ -89,7 +92,7 @@ func Test_getNumTasks(t *testing.T) {
 				mailchimpURL:    tt.fields.mailchimpURL,
 				mailchimpListID: tt.fields.mailchimpListID,
 			}
-			got, err := i.getNumTasks(tt.args.mailchimpReq, tt.args.lastChanged)
+			got, err := i.getNumTasks(tt.args.limit, tt.args.mailchimpReq, tt.args.lastChanged)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("sync.getNumTasks() error = %v, wantErr %v", err, tt.wantErr)
 				return

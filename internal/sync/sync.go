@@ -53,7 +53,7 @@ func (s *sync) Sync() error {
 	if s.isConfigFilled() {
 		return errors.New("the config file must be filled")
 	}
-	numTasks, err := s.getNumTasks(s.mailchimpClient, lastChanged)
+	numTasks, err := s.getNumTasks(pageLimit, s.mailchimpClient, lastChanged)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (s *sync) Sync() error {
 }
 
 // getNumTasks is responsible for building the number of times we'll need to send a request
-func (s *sync) getNumTasks(mailchimpReq http.Mailchimp, lastChanged string) (int, error) {
+func (s *sync) getNumTasks(limit int64, mailchimpReq http.Mailchimp, lastChanged string) (int, error) {
 	rsp, err := mailchimpReq.BuildMailchimpRequest(model.APIReq{
 		Limit:       1,
 		Offset:      0,
@@ -111,7 +111,7 @@ func (s *sync) getNumTasks(mailchimpReq http.Mailchimp, lastChanged string) (int
 	}
 
 	var numTasks int
-	numTasks = int(math.Ceil(float64(rsp.TotalItems) / float64(pageLimit)))
+	numTasks = int(math.Ceil(float64(rsp.TotalItems) / float64(limit)))
 	return numTasks, nil
 }
 
