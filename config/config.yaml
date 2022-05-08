@@ -1,0 +1,12 @@
+# the server config
+mailchimpapi:
+  baseUrl: https://us9.api.mailchimp.com/3.0/lists/
+  listId:
+  apiKey:
+
+ometriaapi:
+  baseUrl: https://api-demo-ingest.ew1-prod.ew1.prod.ometria.cloud/
+  apiKey:
+
+ticker:
+  timer: 7200

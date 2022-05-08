@@ -1,0 +1,1 @@
+{"version":"v1","main":"github.com/joao3101/mailchimp-data-importer","packages":[{"package":"github.com/jinzhu/configor","version":"1.2.1","deps":[{"package":"github.com/BurntSushi/toml","version":"0.3.1"},{"package":"gopkg.in/yaml.v2","version":"2.2.2"}]}]}
