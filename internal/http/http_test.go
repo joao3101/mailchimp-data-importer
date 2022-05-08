@@ -11,6 +11,15 @@ import (
 	"testing"
 )
 
+type httpClientWrapperMock struct {
+	resp []byte
+	err  error
+}
+
+func (h *httpClientWrapperMock) MakeHTTPRequest(req *http.Request) ([]byte, error) {
+	return h.resp, h.err
+}
+
 type httpClientMock struct {
 	resp *http.Response
 	err  error

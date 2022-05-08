@@ -26,13 +26,4 @@ docker:
 docker-run:
 	docker run --name $(NAME) $(NAME):$(VERSION)
 
-migrate-create:
-	migrate create -ext sql -dir db/migration -seq
-
-migrate-up:
-	migrate -path db/migration -database "mysql://root:helloworld@tcp(localhost:3308)/testapp?multiStatements=true" -verbose up
-
-migrate-down:
-	migrate -path db/migration -database "mysql://root:helloworld@tcp(localhost:3308)/testapp?multiStatements=true" -verbose down
-
 .PHONY: all build test run deps unit docker

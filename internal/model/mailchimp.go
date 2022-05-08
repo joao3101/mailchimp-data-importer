@@ -1,11 +1,11 @@
 package model
 
 type ApiResp struct {
-	Members    []OmetriaMembers `json:"members"`
-	TotalItems int64            `json:"total_items"`
+	Members    []MailchimpMembers `json:"members"`
+	TotalItems int64              `json:"total_items"`
 }
 
-type OmetriaMembers struct {
+type MailchimpMembers struct {
 	ID           string      `json:"id"`
 	LastChanged  string      `json:"last_changed"`
 	EmailAddress string      `json:"email_address"`
@@ -16,4 +16,13 @@ type OmetriaMembers struct {
 type MergeFields struct {
 	FirstName string `json:"FNAME"`
 	LastName  string `json:"LNAME"`
+}
+
+type APIReq struct {
+	Limit       int64
+	Offset      int64
+	LastChanged string
+	URL         string
+	APIKey      string
+	ListID      string
 }
