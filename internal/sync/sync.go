@@ -1,16 +1,18 @@
 package sync
 
 import (
+	"errors"
 	"math"
 
 	"github.com/joao3101/mailchimp-data-importer/internal/config"
 	"github.com/joao3101/mailchimp-data-importer/internal/http"
 	"github.com/joao3101/mailchimp-data-importer/internal/model"
+	"github.com/rs/zerolog/log"
 )
 
 const (
 	// this param can be on the config.yaml, this is a simplification
-	pageLimit = 100
+	pageLimit = 1000
 
 	mailchimp = "mailchimp"
 	ometria   = "ometria"
@@ -36,8 +38,8 @@ type sync struct {
 
 func NewSync(conf *config.AppConfig) Sync {
 	return &sync{
-		ometriaClient:   http.NewOmetriaRequest(),
-		mailchimpClient: http.NewMailchimpRequest(),
+		ometriaClient:   http.NewOmetriaClient(),
+		mailchimpClient: http.NewMailchimpClient(),
 		ometriaAPIKey:   conf.OmetriaAPI.ApiKey,
 		ometriaURL:      conf.OmetriaAPI.BaseURL,
 		mailchimpAPIKey: conf.MailChimpAPI.ApiKey,
@@ -48,15 +50,20 @@ func NewSync(conf *config.AppConfig) Sync {
 }
 
 func (s *sync) Sync() error {
+	if s.isConfigFilled() {
+		return errors.New("the config file must be filled")
+	}
 	numTasks, err := s.getNumTasks(s.mailchimpClient, lastChanged)
 	if err != nil {
 		return err
 	}
+	var lastChangedAux string
 
 	var postObj []model.Users
 	for p := 0; p < numTasks; p++ {
 		limit := pageLimit
 		offset := p * pageLimit
+		log.Info().Msgf("Sending request %d of %d", offset, numTasks)
 		rsp, err := s.mailchimpClient.BuildMailchimpRequest(model.APIReq{
 			Limit:       int64(limit),
 			Offset:      int64(offset),
@@ -70,16 +77,11 @@ func (s *sync) Sync() error {
 		}
 
 		// this can be inferred because of the descending sort on the API request
-		lastChanged = rsp.Members[0].LastChanged
-		for _, member := range rsp.Members {
-			postObj = append(postObj, model.Users{
-				ID:        member.ID,
-				Firstname: member.MergeFields.FirstName,
-				Lastname:  member.MergeFields.LastName,
-				Email:     member.EmailAddress,
-				Status:    member.Status,
-			})
+		if p == 0 {
+			lastChangedAux = rsp.Members[0].LastChanged
 		}
+
+		postObj = createPostObj(postObj, rsp.Members)
 
 	}
 
@@ -89,6 +91,7 @@ func (s *sync) Sync() error {
 			return err
 		}
 	}
+	lastChanged = lastChangedAux
 
 	return nil
 }
@@ -110,4 +113,24 @@ func (s *sync) getNumTasks(mailchimpReq http.Mailchimp, lastChanged string) (int
 	var numTasks int
 	numTasks = int(math.Ceil(float64(rsp.TotalItems) / float64(pageLimit)))
 	return numTasks, nil
+}
+
+func (s *sync) isConfigFilled() bool {
+	if s.mailchimpAPIKey == "" || s.mailchimpListID == "" || s.ometriaAPIKey == "" {
+		return false
+	}
+	return true
+}
+
+func createPostObj(postObj []model.Users, members []model.MailchimpMembers) []model.Users {
+	for _, member := range members {
+		postObj = append(postObj, model.Users{
+			ID:        member.ID,
+			Firstname: member.MergeFields.FirstName,
+			Lastname:  member.MergeFields.LastName,
+			Email:     member.EmailAddress,
+			Status:    member.Status,
+		})
+	}
+	return postObj
 }

@@ -17,7 +17,7 @@ type ometria struct {
 	httpClient HTTPClientWrapper
 }
 
-func NewOmetriaRequest() Ometria {
+func NewOmetriaClient() Ometria {
 	return &ometria{
 		NewHTTPClientWrapper(),
 	}

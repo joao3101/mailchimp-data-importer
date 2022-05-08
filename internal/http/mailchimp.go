@@ -17,14 +17,13 @@ type mailchimp struct {
 	httpClient HTTPClientWrapper
 }
 
-func NewMailchimpRequest() Mailchimp {
+func NewMailchimpClient() Mailchimp {
 	return &mailchimp{
 		NewHTTPClientWrapper(),
 	}
 }
 
 func (m *mailchimp) BuildMailchimpRequest(req model.APIReq) (*model.ApiResp, error) {
-	var err error
 	var url string
 
 	if req.Limit == 0 {

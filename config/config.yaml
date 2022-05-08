@@ -1,9 +1,3 @@
-logger:
-  # Log level. Can be one of: debug, info, warn, error, fatal, panic
-  level: info
-  # Use pretty (human-readable) logs
-  pretty: false
-
 # the server config
 mailchimpapi:
   baseUrl: https://us9.api.mailchimp.com/3.0/lists/
