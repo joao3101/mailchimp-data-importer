@@ -10,11 +10,11 @@ import (
 
 func Test_ometria_SendOmetriaPostRequest(t *testing.T) {
 	type fields struct {
-		httpClient HTTPClientWrapper
+		HTTPClient HTTPClientWrapper
+		URL        string
+		APIKey     string
 	}
 	type args struct {
-		url     string
-		apiKey  string
 		postObj []model.Users
 	}
 	tests := []struct {
@@ -27,9 +27,9 @@ func Test_ometria_SendOmetriaPostRequest(t *testing.T) {
 		{
 			name: "error on req",
 			fields: fields{
-				httpClient: &httpClientWrapperMock{
-					err: fmt.Errorf("error"),
-				},
+				HTTPClient: &httpClientWrapperMock{err: fmt.Errorf("error")},
+				URL:        "",
+				APIKey:     "",
 			},
 			args:    args{},
 			want:    nil,
@@ -38,12 +38,12 @@ func Test_ometria_SendOmetriaPostRequest(t *testing.T) {
 		{
 			name: "happy path",
 			fields: fields{
-				httpClient: &httpClientWrapperMock{
-					resp: []byte(`{
-						"status": "Ok",
-						"response": 1
-					}`),
-				},
+				HTTPClient: &httpClientWrapperMock{resp: []byte(`{
+												"status": "Ok",
+												"response": 1
+											}`)},
+				URL:    "",
+				APIKey: "",
 			},
 			args: args{},
 			want: &model.OmetriaResponse{
@@ -55,10 +55,10 @@ func Test_ometria_SendOmetriaPostRequest(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			o := &ometria{
-				httpClient: tt.fields.httpClient,
+			o := &OmetriaObj{
+				HTTPClient: tt.fields.HTTPClient,
 			}
-			got, err := o.SendOmetriaPostRequest(tt.args.url, tt.args.apiKey, tt.args.postObj)
+			got, err := o.SendOmetriaPostRequest(tt.args.postObj)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ometria.SendOmetriaPostRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return

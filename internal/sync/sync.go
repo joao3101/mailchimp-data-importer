@@ -29,31 +29,29 @@ type Sync interface {
 type sync struct {
 	ometriaClient   http.Ometria
 	mailchimpClient http.Mailchimp
-	ometriaAPIKey   string
-	ometriaURL      string
-	mailchimpAPIKey string
-	mailchimpURL    string
-	mailchimpListID string
 }
 
-func NewSync(conf *config.AppConfig) Sync {
-	return &sync{
-		ometriaClient:   http.NewOmetriaClient(),
-		mailchimpClient: http.NewMailchimpClient(),
-		ometriaAPIKey:   conf.OmetriaAPI.ApiKey,
-		ometriaURL:      conf.OmetriaAPI.BaseURL,
-		mailchimpAPIKey: conf.MailChimpAPI.ApiKey,
-		mailchimpURL:    conf.MailChimpAPI.BaseURL,
-		mailchimpListID: conf.MailChimpAPI.ListID,
+func NewSync(conf *config.AppConfig) (Sync, error) {
+	if !isConfigFilled(conf.MailChimpAPI.ApiKey, conf.MailChimpAPI.ListID, conf.OmetriaAPI.ApiKey) {
+		return nil, errors.New("please fill the config.yaml file")
 	}
+	return &sync{
+		ometriaClient: &http.OmetriaObj{
+			URL:    conf.OmetriaAPI.BaseURL,
+			APIKey: conf.OmetriaAPI.ApiKey,
+		},
+		mailchimpClient: &http.MailchimpObj{
+			HTTPClient: http.NewHTTPClientWrapper(),
+			URL:        conf.MailChimpAPI.BaseURL,
+			APIKey:     conf.MailChimpAPI.ApiKey,
+			ListID:     conf.MailChimpAPI.ListID,
+		},
+	}, nil
 
 }
 
 func (s *sync) Sync() error {
-	if s.isConfigFilled() {
-		return errors.New("the config file must be filled")
-	}
-	numTasks, err := s.getNumTasks(pageLimit, s.mailchimpClient, lastChanged)
+	numTasks, err := s.getNumTasks(pageLimit, lastChanged)
 	if err != nil {
 		return err
 	}
@@ -63,15 +61,8 @@ func (s *sync) Sync() error {
 	for p := 0; p < numTasks; p++ {
 		limit := pageLimit
 		offset := p * pageLimit
-		log.Info().Msgf("Sending request %d of %d", offset, numTasks)
-		rsp, err := s.mailchimpClient.BuildMailchimpRequest(model.APIReq{
-			Limit:       int64(limit),
-			Offset:      int64(offset),
-			LastChanged: lastChanged,
-			URL:         s.mailchimpURL,
-			APIKey:      s.mailchimpAPIKey,
-			ListID:      s.mailchimpListID,
-		})
+		log.Info().Msgf("Sending request %d of %d", p+1, numTasks-1)
+		rsp, err := s.mailchimpClient.BuildMailchimpRequest(int64(limit), int64(offset), lastChanged)
 		if err != nil {
 			return err
 		}
@@ -86,7 +77,7 @@ func (s *sync) Sync() error {
 	}
 
 	if len(postObj) > 0 {
-		ometriaRsp, err := s.ometriaClient.SendOmetriaPostRequest(s.ometriaURL, s.ometriaAPIKey, postObj)
+		ometriaRsp, err := s.ometriaClient.SendOmetriaPostRequest(postObj)
 		if err != nil || ometriaRsp.Status != "Ok" {
 			return err
 		}
@@ -97,15 +88,9 @@ func (s *sync) Sync() error {
 }
 
 // getNumTasks is responsible for building the number of times we'll need to send a request
-func (s *sync) getNumTasks(limit int64, mailchimpReq http.Mailchimp, lastChanged string) (int, error) {
-	rsp, err := mailchimpReq.BuildMailchimpRequest(model.APIReq{
-		Limit:       1,
-		Offset:      0,
-		LastChanged: lastChanged,
-		URL:         s.mailchimpURL,
-		APIKey:      s.mailchimpAPIKey,
-		ListID:      s.mailchimpListID,
-	})
+// a future improvement may be also get the lastChanged here
+func (s *sync) getNumTasks(limit int64, lastChanged string) (int, error) {
+	rsp, err := s.mailchimpClient.BuildMailchimpRequest(1, 0, lastChanged)
 	if err != nil {
 		return 0, err
 	}
@@ -115,8 +100,8 @@ func (s *sync) getNumTasks(limit int64, mailchimpReq http.Mailchimp, lastChanged
 	return numTasks, nil
 }
 
-func (s *sync) isConfigFilled() bool {
-	if s.mailchimpAPIKey == "" || s.mailchimpListID == "" || s.ometriaAPIKey == "" {
+func isConfigFilled(mailchimpAPIKey, mailchimpListID, ometriaAPIKey string) bool {
+	if mailchimpAPIKey == "" || mailchimpListID == "" || ometriaAPIKey == "" {
 		return false
 	}
 	return true

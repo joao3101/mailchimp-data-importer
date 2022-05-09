@@ -13,7 +13,10 @@ func main() {
 	tickerChan := time.NewTicker(time.Second * duration).C
 	log.Info().Msg("Starting app")
 	for {
-		newSync := sync.NewSync(&config.Config)
+		newSync, err := sync.NewSync(&config.Config)
+		if err != nil {
+			log.Panic().Msgf("failed to create a new sync: %v", err)
+		}
 		if err := newSync.Sync(); err != nil {
 			log.Panic().Msgf("failed to run app: %v", err)
 		}

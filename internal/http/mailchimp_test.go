@@ -22,10 +22,14 @@ func Test_mailchimp_BuildMailchimpRequest(t *testing.T) {
 	rspArray := []model.MailchimpMembers{}
 	rspArray = append(rspArray, rsp)
 	type fields struct {
-		httpClient HTTPClientWrapper
+		HTTPClient HTTPClientWrapper
+		URL        string
+		APIKey     string
+		ListID     string
 	}
 	type args struct {
-		req model.APIReq
+		limit, offset int64
+		lastChanged   string
 	}
 	tests := []struct {
 		name    string
@@ -37,19 +41,15 @@ func Test_mailchimp_BuildMailchimpRequest(t *testing.T) {
 		{
 			name: "error on request",
 			fields: fields{
-				httpClient: &httpClientWrapperMock{
-					err: fmt.Errorf("error"),
-				},
+				HTTPClient: &httpClientWrapperMock{err: fmt.Errorf("error")},
+				URL:        "",
+				APIKey:     "",
+				ListID:     "",
 			},
 			args: args{
-				req: model.APIReq{
-					Limit:       0,
-					Offset:      0,
-					LastChanged: "",
-					URL:         "",
-					APIKey:      "",
-					ListID:      "",
-				},
+				limit:       0,
+				offset:      0,
+				lastChanged: "",
 			},
 			want:    nil,
 			wantErr: true,
@@ -57,19 +57,14 @@ func Test_mailchimp_BuildMailchimpRequest(t *testing.T) {
 		{
 			name: "happy path",
 			fields: fields{
-				httpClient: &httpClientWrapperMock{
+				HTTPClient: &httpClientWrapperMock{
 					resp: []byte(`{ "members": [ { "id": "fb08f83f7eb7d7079cbe93ed0e6bb218", "email_address": "al.james+mc637@gmail.com", "full_name": "Jessica Deturo", "web_id": 562161485, "email_type": "html", "status": "subscribed", "merge_fields": { "FNAME": "Jessica", "LNAME": "Deturo" }, "last_changed": "2018-02-15T06:58:49+00:00"} ], "total_items": 50035 }`),
 				},
 			},
 			args: args{
-				req: model.APIReq{
-					Limit:       0,
-					Offset:      0,
-					LastChanged: "",
-					URL:         "",
-					APIKey:      "",
-					ListID:      "",
-				},
+				limit:       0,
+				offset:      0,
+				lastChanged: "",
 			},
 			want: &model.ApiResp{
 				Members:    rspArray,
@@ -80,10 +75,10 @@ func Test_mailchimp_BuildMailchimpRequest(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := &mailchimp{
-				httpClient: tt.fields.httpClient,
+			m := &MailchimpObj{
+				HTTPClient: tt.fields.HTTPClient,
 			}
-			got, err := m.BuildMailchimpRequest(tt.args.req)
+			got, err := m.BuildMailchimpRequest(tt.args.limit, tt.args.offset, tt.args.lastChanged)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("mailchimp.BuildMailchimpRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return

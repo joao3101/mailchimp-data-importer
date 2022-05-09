@@ -10,34 +10,38 @@ import (
 )
 
 type Ometria interface {
-	SendOmetriaPostRequest(url, key string, postObj []model.Users) (*model.OmetriaResponse, error)
+	SendOmetriaPostRequest(postObj []model.Users) (*model.OmetriaResponse, error)
 }
 
-type ometria struct {
-	httpClient HTTPClientWrapper
+type OmetriaObj struct {
+	HTTPClient HTTPClientWrapper
+	URL        string
+	APIKey     string
 }
 
-func NewOmetriaClient() Ometria {
-	return &ometria{
-		NewHTTPClientWrapper(),
+func NewOmetriaClient(url, apiKey string) Ometria {
+	return &OmetriaObj{
+		HTTPClient: NewHTTPClientWrapper(),
+		URL:        url,
+		APIKey:     apiKey,
 	}
 }
 
-func (o *ometria) SendOmetriaPostRequest(url, apiKey string, postObj []model.Users) (*model.OmetriaResponse, error) {
+func (o *OmetriaObj) SendOmetriaPostRequest(postObj []model.Users) (*model.OmetriaResponse, error) {
 	postReq, err := json.Marshal(postObj)
 	if err != nil {
 		return nil, err
 	}
 
-	url = fmt.Sprintf("%srecord", url)
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(postReq))
+	o.URL = fmt.Sprintf("%srecord", o.URL)
+	req, err := http.NewRequest(http.MethodPost, o.URL, bytes.NewBuffer(postReq))
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", (apiKey))
-	response, err := o.httpClient.MakeHTTPRequest(req)
+	req.Header.Add("Authorization", (o.APIKey))
+	response, err := o.HTTPClient.MakeHTTPRequest(req)
 	if err != nil {
 		return nil, err
 	}

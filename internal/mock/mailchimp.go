@@ -8,9 +8,9 @@ type MockMailchimpAPI struct {
 }
 
 type Mailchimp interface {
-	BuildMailchimpRequest(model.APIReq) (*model.ApiResp, error)
+	BuildMailchimpRequest(limit, offset int64, lastChanged string) (*model.ApiResp, error)
 }
 
-func (m *MockMailchimpAPI) BuildMailchimpRequest(model.APIReq) (*model.ApiResp, error) {
+func (m *MockMailchimpAPI) BuildMailchimpRequest(limit, offset int64, lastChanged string) (*model.ApiResp, error) {
 	return m.ApiResp, m.Err
 }

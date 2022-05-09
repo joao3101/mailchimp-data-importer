@@ -10,33 +10,39 @@ import (
 )
 
 type Mailchimp interface {
-	BuildMailchimpRequest(model.APIReq) (*model.ApiResp, error)
+	BuildMailchimpRequest(limit, offset int64, lastChanged string) (*model.ApiResp, error)
 }
 
-type mailchimp struct {
-	httpClient HTTPClientWrapper
+type MailchimpObj struct {
+	HTTPClient HTTPClientWrapper
+	URL        string
+	APIKey     string
+	ListID     string
 }
 
-func NewMailchimpClient() Mailchimp {
-	return &mailchimp{
-		NewHTTPClientWrapper(),
+func NewMailchimpClient(url, apiKey, listID string) Mailchimp {
+	return &MailchimpObj{
+		HTTPClient: NewHTTPClientWrapper(),
+		URL:        url,
+		APIKey:     apiKey,
+		ListID:     listID,
 	}
 }
 
-func (m *mailchimp) BuildMailchimpRequest(req model.APIReq) (*model.ApiResp, error) {
+func (m *MailchimpObj) BuildMailchimpRequest(limit, offset int64, lastChanged string) (*model.ApiResp, error) {
 	var url string
 
-	if req.Limit == 0 {
-		url = fmt.Sprintf("%s%s/members?sort_field=last_changed&sort_dir=DESC", req.URL, req.ListID)
-		if req.LastChanged != "" {
-			url += fmt.Sprintf("&since_last_changed=%s", req.LastChanged)
+	if limit == 0 {
+		url = fmt.Sprintf("%s%s/members?sort_field=last_changed&sort_dir=DESC", m.URL, m.ListID)
+		if lastChanged != "" {
+			url += fmt.Sprintf("&since_last_changed=%s", lastChanged)
 		}
 
 	} else {
 		url = fmt.Sprintf("%s%s/members?count=%d&offset=%d&sort_field=last_changed&sort_dir=DESC",
-			req.URL, req.ListID, req.Limit, req.Offset)
-		if req.LastChanged != "" {
-			url += fmt.Sprintf("&since_last_changed=%s", req.LastChanged)
+			m.URL, m.ListID, limit, offset)
+		if lastChanged != "" {
+			url += fmt.Sprintf("&since_last_changed=%s", lastChanged)
 		}
 	}
 
@@ -45,9 +51,9 @@ func (m *mailchimp) BuildMailchimpRequest(req model.APIReq) (*model.ApiResp, err
 		return nil, err
 	}
 
-	key := util.GenerateBase64("ometria", req.APIKey)
+	key := util.GenerateBase64("ometria", m.APIKey)
 	request.Header.Add("Authorization", ("Basic " + key))
-	response, err := m.httpClient.MakeHTTPRequest(request)
+	response, err := m.HTTPClient.MakeHTTPRequest(request)
 	if err != nil {
 		return nil, err
 	}

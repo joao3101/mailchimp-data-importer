@@ -8,9 +8,9 @@ type MockOmetriaAPI struct {
 }
 
 type Ometria interface {
-	SendOmetriaPostRequest(url, key string, postObj []model.Users) (*model.OmetriaResponse, error)
+	SendOmetriaPostRequest(postObj []model.Users) (*model.OmetriaResponse, error)
 }
 
-func (m *MockOmetriaAPI) SendOmetriaPostRequest(url, key string, postObj []model.Users) (*model.OmetriaResponse, error) {
+func (m *MockOmetriaAPI) SendOmetriaPostRequest(postObj []model.Users) (*model.OmetriaResponse, error) {
 	return m.Resp, m.Err
 }

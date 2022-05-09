@@ -10,3 +10,5 @@ ometriaapi:
 
 ticker:
   timer: 7200
+
+pagelimit: 1000

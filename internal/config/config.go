@@ -29,6 +29,7 @@ type AppConfig struct {
 	MailChimpAPI MailChimp `yaml:"mailchimpapi"`
 	OmetriaAPI   Ometria   `yaml:"ometriaapi"`
 	Ticker       Ticker    `yaml:"ticker"`
+	PageLimit    int64     `yaml:"pagelimit"`
 }
 
 var (
