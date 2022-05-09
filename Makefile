@@ -24,6 +24,6 @@ docker:
 	docker build -f build/Dockerfile . -t $(NAME):$(VERSION)
 
 docker-run:
-	docker run --name $(NAME) $(NAME):$(VERSION)
+	sudo docker run --name $(NAME) $(NAME):$(VERSION)
 
 .PHONY: all build test run deps unit docker

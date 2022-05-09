@@ -15,13 +15,16 @@ RUN go mod download
 
 ENV CGO_ENABLED=0
 # Compile static binary
-RUN go build -ldflags "-s -w" ./cmd/
+RUN go build ./cmd/main.go
 
 ##################################################
 # Final image
 FROM alpine
 
-RUN mkdir -p /app
+RUN mkdir -p /app/config
 WORKDIR /app
+
+# Copy config
+COPY --from=builder /build/config/config.yaml config/config.yaml
 
 CMD ["/app"]
