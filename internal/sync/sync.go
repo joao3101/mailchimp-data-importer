@@ -81,6 +81,7 @@ func (s *sync) Sync() error {
 		if err != nil || ometriaRsp.Status != "Ok" {
 			return err
 		}
+		log.Info().Msg("Response sent to Ometria")
 	}
 	lastChanged = lastChangedAux
 
